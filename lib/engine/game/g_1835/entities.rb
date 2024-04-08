@@ -121,6 +121,17 @@ module Engine
             ],
             color: :oegray,
           },
+          {
+            name: 'Bayern director',
+            sym: 'BD',
+            value: 184,
+            revenue: 0,
+            desc: 'Buyer receives the 20% Bayern director share',
+            abilities: [
+              { type: 'shares', shares: 'BY_0'},
+            ],
+            color: :turquoise,
+          }
         ].freeze
 
         CORPORATIONS = [
