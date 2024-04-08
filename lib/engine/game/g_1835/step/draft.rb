@@ -7,12 +7,16 @@ module Engine
     module G1835
       module Step
         class Draft < Engine::Step::Base
-          attr_reader :companies, :choices, :grouped_companies
+          attr_reader :companies, :choices, :grouped_companies, :minors
 
           ACTIONS = %w[bid pass].freeze
 
           def setup
-            @companies = @game.companies.sort_by { |item| [item.revenue, item.value] }
+            if @game.option_clemens?
+              @companies = @game.companies + @game.minors
+            else
+              @companies = @game.companies.sort_by { |item| [item.revenue, item.value] }
+            end
           end
 
           def available

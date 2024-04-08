@@ -208,6 +208,10 @@ module Engine
 
         HOME_TOKEN_TIMING = :float
 
+        def option_clemens?
+          @optional_rules&.include?(:clemens)
+        end
+
         def setup
           corporations.each do |i|
             @stock_market.set_par(i, @stock_market.par_prices.find do |p|
