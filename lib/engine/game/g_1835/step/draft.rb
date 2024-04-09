@@ -12,11 +12,11 @@ module Engine
           ACTIONS = %w[bid pass].freeze
 
           def setup
-            if @game.option_clemens?
+            # if @game.option_clemens?
               @companies = @game.companies + @game.minors
-            else
-              @companies = @game.companies.sort_by { |item| [item.revenue, item.value] }
-            end
+            # else
+            #   @companies = @game.companies.sort_by { |item| [item.revenue, item.value] }
+            # end
           end
 
           def available
@@ -25,6 +25,10 @@ module Engine
 
           def may_purchase?(_company)
             true
+          end
+
+          def may_choose?(_company)
+            false
           end
 
           def auctioning; end
@@ -73,6 +77,7 @@ module Engine
             player.companies << company
             player.spend(price, @game.bank)
             @companies.delete(company)
+            @game.after_buy_company(current_entity, company, price)
 
             @log << "#{player.name} buys #{company.name} for #{@game.format_currency(price)}"
 

@@ -32,6 +32,8 @@ module Engine
 
         STARTING_CASH = { 2 => 1200, 3 => 800, 4 => 600, 5 => 480, 6 => 400 }.freeze
 
+
+
         MARKET = [
           %w[60y
              67
@@ -199,6 +201,9 @@ module Engine
         def optional_6_train
           @optional_rules&.include?(:optional_6_train)
         end
+
+
+
       end
     end
   end

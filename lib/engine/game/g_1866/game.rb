@@ -893,7 +893,7 @@ module Engine
         def company_header(company)
           if self.class::NATIONAL_COMPANIES.include?(company.id)
             'CONCESSION'
-          elsif self.class::MINOR_COMPANIES.include?(company.id)
+          elsif self.class::MINOR_COMPANIES.incl  ude?(company.id)
             'MINOR'
           else
             'PRIVATE COMPANY'

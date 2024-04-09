@@ -52,6 +52,8 @@ module Engine
         # money per initial share sold
         CAPITALIZATION = :incremental
 
+        MINOR_COMPANIES = %w[P1 P2 P3 P4 P5 P6].freeze
+
         MUST_SELL_IN_BLOCKS = false
 
         MARKET = [['',
@@ -225,6 +227,22 @@ module Engine
           G1835::Round::Draft.new(self,
                                   [G1835::Step::Draft],
                                   reverse_order: true)
+        end
+
+        def after_buy_company(player, company, _price)
+          abilities(company, :shares) do |ability|
+            ability.shares.each do |share|
+              share_pool.buy_shares(player, share, exchange: :free)
+            end
+          end
+        end
+
+        def company_header(company)
+          if self.class::MINOR_COMPANIES.include?(company.id)
+            'MINOR'
+          else
+            'PRIVATE COMPANY'
+          end
         end
 
         def operating_round(round_num)

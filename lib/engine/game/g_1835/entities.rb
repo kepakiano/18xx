@@ -12,7 +12,6 @@ module Engine
             revenue: 20,
             desc: 'Leipzig-Dresdner Bahn - Sachsen Direktor Papier',
             abilities: [{ type: 'shares', shares: 'SX_0' },
-                        { type: 'no_buy' },
                         { type: 'close', when: 'bought_train', corporation: 'SX' }],
             color: :red,
           },
@@ -126,13 +125,14 @@ module Engine
             sym: 'BD',
             value: 184,
             revenue: 0,
-            desc: 'Buyer receives the 20% Bayern director share',
+            desc: 'Buyer receives the 20% Bayern director sharaaaae',
             abilities: [
               { type: 'shares', shares: 'BY_0'},
             ],
             color: :turquoise,
           }
         ].freeze
+
 
         CORPORATIONS = [
           {
@@ -239,7 +239,7 @@ module Engine
 
         MINORS = [
           {
-            sym: 'P1',
+            sym: 'M1',
             name: 'Bergisch Märkische Bahn',
             logo: '1835/PR',
             simple_logo: '1835/PR.alt',
@@ -258,7 +258,7 @@ module Engine
             color: '#37383a',
           },
           {
-            sym: 'P2',
+            sym: 'M2',
             name: 'Berlin Potsdamer Bahn',
             logo: '1835/PR',
             simple_logo: '1835/PR.alt',
@@ -277,7 +277,7 @@ module Engine
             color: '#37383a',
           },
           {
-            sym: 'P3',
+            sym: 'M3',
             name: 'Magdeburger-Bahn',
             logo: '1835/PR',
             simple_logo: '1835/PR.alt',
@@ -296,7 +296,7 @@ module Engine
             color: '#37383a',
           },
           {
-            sym: 'P4',
+            sym: 'M4',
             name: 'Köln-Mindener Bahn',
             logo: '1835/PR',
             simple_logo: '1835/PR.alt',
@@ -315,7 +315,7 @@ module Engine
             color: '#37383a',
           },
           {
-            sym: 'P5',
+            sym: 'M5',
             name: 'Berlin Stettiner Bahn',
             logo: '1835/PR',
             simple_logo: '1835/PR.alt',
@@ -334,7 +334,7 @@ module Engine
             color: '#37383a',
           },
           {
-            sym: 'P6',
+            sym: 'M6',
             name: 'Altona Kiel Bahn',
             logo: '1835/PR',
             simple_logo: '1835/PR.alt',
