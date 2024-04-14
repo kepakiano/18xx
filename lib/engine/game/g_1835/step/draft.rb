@@ -7,6 +7,7 @@ module Engine
     module G1835
       module Step
         class Draft < Engine::Step::Base
+          include BuyMinor
           attr_reader :companies, :choices, :grouped_companies, :minors
 
           ACTIONS = %w[bid pass].freeze

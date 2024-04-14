@@ -6,6 +6,14 @@ module Engine
       module Entities
         COMPANIES = [
           {
+            sym: 'EKB',
+            name: 'Minor 1 Euskirchener Kreisbahn',
+            value: 210,
+            revenue: 0,
+            desc: "Buyer gets M2",
+            abilities: [{ type: 'no_buy', owner_type: 'player' }],
+          },
+          {
             name: 'Leipzig-Dresdner Bahn',
             sym: 'LD',
             value: 190,
