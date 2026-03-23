@@ -10,6 +10,7 @@ module Engine
   module Game
     module G1835
       class Game < Game::Base
+        attr_accessor :draft_finished
         include_meta(G1835::Meta)
         include G1835::Entities
         include G1835::Map
@@ -48,7 +49,7 @@ module Engine
         }.freeze
         CERT_LIMIT = { 3 => 19, 4 => 15, 5 => 12, 6 => 11, 7 => 9 }.freeze
 
-        STARTING_CASH = { 3 => 600, 4 => 475, 5 => 390, 6 => 340, 7 => 310 }.freeze
+        STARTING_CASH = { 3 => 6000, 4 => 475, 5 => 390, 6 => 340, 7 => 310 }.freeze
         # money per initial share sold
         CAPITALIZATION = :incremental
 
@@ -208,23 +209,137 @@ module Engine
 
         HOME_TOKEN_TIMING = :float
 
+        STARTING_PACKAGE_SOLD = false
+
+        YELLOW_OR_UPGRADE = [{ lay: true, upgrade: true }].freeze
+        ONE_YELLOW = [{ lay: true, upgrade: false }].freeze
+        TWO_YELLOW = [{ lay: true, upgrade: false }, { lay: true, upgrade: false }].freeze
+
         def setup
-          corporations.each do |i|
-            @stock_market.set_par(i, @stock_market.par_prices.find do |p|
-                                       p.price == PAR_PRICES[i.id]
-                                     end)
-            i.ipoed = true
+
+          @can_buy_conditions = {
+            "BY" => { corporation: "BY", sold: 0 },
+            "SX" => { corporation: "BY", sold: 0 },
+            "BA" => { corporation: "BY", sold: 0 },
+            "WT" => { corporation: "BA", sold: 50 },
+            "HE" => { corporation: "WT", sold: 50 },
+            "PR" => { corporation: "BA", sold: 20 },
+            "MS" => { corporation: "BY", sold: 20 },
+            "OL" => { corporation: "MS", sold: 20 },
+          }
+
+          @draft_finished = false
+          @turn = 0
+          @draft_round_num = 1
+          LOGGER.debug("@stock_market.par_prices #{@stock_market.par_prices}")
+          @corporations.select{|corp| corp.type == :major}.each do |i|
+            share_price = @stock_market.par_prices.find{|share_price| share_price.price == PAR_PRICES[i.id]}
+            LOGGER.debug("share_price for #{i.name}: #{share_price}")
+            @stock_market.set_par(i, share_price)
+            if i.id == "BY" || i.id == "SX"
+              i.ipoed = true
+            end
           end
         end
 
+        def corporations_in_same_block(corporation)
+          first_block = %w[BY SX]
+          second_block = %w[BA WT HE PR]
+          third_block = %w[MS OL]
+
+          block = if first_block.include?(corporation.id)
+                    first_block
+                    elsif
+           second_block.include?(corporation.id)
+             second_block
+           else
+             third_block
+           end
+           block.map{|c| corporation_by_id(c)}
+        end
+
+        def ipo_next_block(corporation)
+          first_block = %w[BY SX]
+          second_block = %w[BA WT HE PR]
+          third_block = %w[MS OL]
+
+          block = if first_block.include?(corporation.id)
+                    second_block
+                    elsif
+           second_block.include?(corporation.id)
+                      third_block
+           else
+             []
+           end
+           block.map{|c| corporation_by_id(c)}.each{|corp_to_ipo| corp_to_ipo.ipoed = true}
+        end
+
+        def corporation_available?(corp)
+          false unless corp.type == :major
+          condition = @can_buy_conditions[corp.id]
+          other_corp = @corporations.find{|c| c.id == condition[:corporation] }
+          false unless other_corp
+          other_corp.ipo_owner.percent_of(other_corp) <= 100 - condition[:sold]
+        end
+
+        def find_corporation(company)
+          corporation_by_id(company.id)
+        end
+
+        def sorted_corporations
+          @corporations.select { |c| c.type == :major && c.ipoed}
+        end
+
+        def can_par?(corporation, _parrer)
+          # LOGGER.debug("can_par?: #{corporation.name} #{_parrer.name}")
+          super
+        end
+
+        def tile_lays(_entity)
+          return YELLOW_OR_UPGRADE if _entity.type == :minor
+          return YELLOW_OR_UPGRADE if @phase.name.to_i >= 3
+          TWO_YELLOW
+        end
+
         def init_round
+          @log << "-- init_round-- wololooooooo "
+          new_draft_round
+        end
+        def new_draft_round
+          @log << "-- Draft Round #{@turn} -- "
           G1835::Round::Draft.new(self,
-                                  [G1835::Step::Draft],
-                                  reverse_order: true)
+                                    [G1835::Step::Draft],)
+        end
+
+        def stock_round
+          @log << "-- stock_round-- wololooooooo "
+          Engine::Round::Stock.new(self, [
+            G1835::Step::BuySellParShares,
+          ])
+        end
+
+        def next_round! # Draft is Turn 0
+          @log << "-- next_round! -- wololooooooo "
+          if @draft_finished
+            @turn = 1 if @turn.zero?
+
+            return super
+          end
+
+          clear_programmed_actions
+          @round =
+            case @round
+            when G1835::Round::Draft
+              new_operating_round(@draft_round_num)
+            when G1835::Round::Operating
+              @draft_round_num += 1
+              new_draft_round
+            end
         end
 
         def operating_round(round_num)
-          Engine::Round::Operating.new(self, [
+          @log << "-- Operating Round #{round_num} -- wololooooooo "
+          G1835::Round::Operating.new(self, [
             Engine::Step::Bankrupt,
             Engine::Step::SpecialTrack,
             Engine::Step::SpecialToken,
