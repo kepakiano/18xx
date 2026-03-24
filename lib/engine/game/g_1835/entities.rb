@@ -200,6 +200,7 @@ module Engine
             simple_logo: '1835/BY.alt',
             tokens: [0, 0, 0, 0, 0],
             float_percent: 50,
+            max_ownership_percent: 100,
             shares: [20, 10, 10, 10, 10, 10, 10, 10, 10],
             coordinates: 'O15',
             color: :turquoise,
@@ -212,6 +213,7 @@ module Engine
             simple_logo: '1835/SX.alt',
             tokens: [0, 0, 0],
             float_percent: 50,
+            max_ownership_percent: 100,
             shares: [20, 10, 10, 10, 10, 10, 10, 10, 10],
             coordinates: 'H16',
             color: '#d81e3e',
@@ -224,6 +226,7 @@ module Engine
             simple_logo: '1835/BA.alt',
             tokens: [0, 0],
             float_percent: 50,
+            max_ownership_percent: 100,
             shares: [20, 10, 10, 10, 10, 10, 10, 20],
             coordinates: 'L6',
             color: '#7b352a',
@@ -236,6 +239,7 @@ module Engine
             simple_logo: '1835/WT.alt',
             tokens: [0, 0],
             float_percent: 50,
+            max_ownership_percent: 100,
             shares: [20, 10, 10, 10, 10, 10, 10, 20],
             last_cert: ['WT_7'],
             coordinates: 'M9',
@@ -250,6 +254,7 @@ module Engine
             simple_logo: '1835/HE.alt',
             tokens: [0, 0],
             float_percent: 50,
+            max_ownership_percent: 100,
             shares: [20, 10, 10, 10, 10, 10, 10, 20],
             last_cert: %w[HE_7],
             coordinates: 'J8',
@@ -264,7 +269,8 @@ module Engine
             tokens: [0, 0],
             percent: 10,
             float_percent: 60,
-            shares: [20, 10, 20, 20, 10, 10, 10],
+            max_ownership_percent: 100,
+            shares: [20, 20, 20, 10, 10, 10, 10],
             # the shares order creates a 10 share company, but the first 3 sold papers are 20%
             coordinates: 'C13',
             color: :violet,
@@ -277,7 +283,8 @@ module Engine
             simple_logo: '1835/OL.alt',
             tokens: [0, 0],
             float_percent: 60,
-            shares: [20, 10, 20, 20, 10, 10, 10],
+            max_ownership_percent: 100,
+            shares: [20, 20, 20, 10, 10, 10, 10],
             # the shares order creates a 10 share company, but the first 3 sold papers are 20%
             coordinates: 'D6',
             color: '#6e6966',
@@ -289,6 +296,7 @@ module Engine
             logo: '1835/PR',
             simple_logo: '1835/PR.alt',
             tokens: [0, 0, 0, 0, 0],
+            max_ownership_percent: 100,
             shares: [10, 10, 10, 10, 10, 10, 10, 10, 5, 5, 5, 5],
             # shares for minors and Privates should be reserved
             # coordinates: 'E19',
@@ -303,7 +311,6 @@ module Engine
             type: 'minor',
             shares: [100],
             hide_shares: true,
-            max_ownership_percent: 100,
             float_percent: 100,
             # abilities: [
             #   {
@@ -329,7 +336,6 @@ module Engine
             type: 'minor',
             shares: [100],
             hide_shares: true,
-            max_ownership_percent: 100,
             float_percent: 100,
             # abilities: [
             #   {
@@ -353,6 +359,7 @@ module Engine
             tokens: [0],
             type: 'minor',
             shares: [100],
+            hide_shares: true,
             float_percent: 100,
             # abilities: [
             #   {
@@ -375,6 +382,7 @@ module Engine
             tokens: [0],
             type: 'minor',
             shares: [100],
+            hide_shares: true,
             float_percent: 100,
             # abilities: [
             #   {
@@ -397,6 +405,7 @@ module Engine
             tokens: [0],
             type: 'minor',
             shares: [100],
+            hide_shares: true,
             float_percent: 100,
             # abilities: [
             #   {
@@ -420,6 +429,7 @@ module Engine
             tokens: [0],
             type: 'minor',
             shares: [100],
+            hide_shares: true,
             float_percent: 100,
             # abilities: [
             #   {

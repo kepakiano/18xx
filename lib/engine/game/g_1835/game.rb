@@ -210,6 +210,7 @@ module Engine
         HOME_TOKEN_TIMING = :float
 
         STARTING_PACKAGE_SOLD = false
+        BUY_SHARE_FROM_OTHER_PLAYER = true
 
         YELLOW_OR_UPGRADE = [{ lay: true, upgrade: true }].freeze
         ONE_YELLOW = [{ lay: true, upgrade: false }].freeze
@@ -293,6 +294,10 @@ module Engine
         def can_par?(corporation, _parrer)
           # LOGGER.debug("can_par?: #{corporation.name} #{_parrer.name}")
           super
+        end
+
+        def cert_limit(_player = nil)
+          @cert_limit + @corporations.count{|corporation| corporation.type == :major && _player.percent_of(corporation) >= 80}
         end
 
         def tile_lays(_entity)
