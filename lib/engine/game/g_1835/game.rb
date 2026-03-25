@@ -229,6 +229,21 @@ module Engine
             "OL" => { corporation: "MS", sold: 20 },
           }
 
+          # Reserve Preußen shares to be exchanged for Vorpreußen and Privates
+          pr.shares.last(8).each { |s| s.buyable = false }
+
+          # override share_percent so that MS and OL aren't created as 5-share company
+          corporation_by_id("MS").forced_share_percent = 10
+          corporation_by_id("OL").forced_share_percent = 10
+
+          corporation_by_id("BA").shares.last.double_cert = true
+          corporation_by_id("WT").shares.last.double_cert = true
+          corporation_by_id("HE").shares.last.double_cert = true
+          corporation_by_id("MS").shares[1].double_cert = true
+          corporation_by_id("MS").shares[2].double_cert = true
+          corporation_by_id("OL").shares[1].double_cert = true
+          corporation_by_id("OL").shares[2].double_cert = true
+
           @draft_finished = false
           @turn = 0
           @draft_round_num = 1
@@ -241,6 +256,7 @@ module Engine
               i.ipoed = true
             end
           end
+
         end
 
         def corporations_in_same_block(corporation)
@@ -285,6 +301,10 @@ module Engine
 
         def find_corporation(company)
           corporation_by_id(company.id)
+        end
+
+        def pr
+          corporation_by_id('PR')
         end
 
         def sorted_corporations

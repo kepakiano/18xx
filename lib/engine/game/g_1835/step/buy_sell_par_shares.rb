@@ -24,16 +24,20 @@ module Engine
             bundle = action.bundle
             corp   = bundle.corporation
 
-            all_in_block_sold = @game.corporations_in_same_block(corp).all?{|corporation| corporation.shares.none?{|share| share.owner == corporation}}
+            all_in_block_sold = @game.corporations_in_same_block(corp).all?{|corporation| corporation.shares.select{|share| share.buyable}.none?{|share| share.owner == corporation}}
             LOGGER.debug("all_in_block_sold?: #{all_in_block_sold}")
             if all_in_block_sold
               @game.ipo_next_block(corp)
             end
           end
 
+          def allow_president_change?(_corporation)
+            _corporation != @game.pr
+          end
+
           def can_buy?(entity, bundle)
-            LOGGER.debug("can_buy?: #{entity.name} #{bundle&.corporation&.name} #{bundle&.owner&.name} #{bundle.owner.player?}")
-            if bundle.owner.player?
+
+            if bundle&.owner&.player?
               return false unless can_nationalize?(entity, bundle.corporation)
 
               return entity.cash >= nationalization_price(bundle.price) &&
@@ -43,23 +47,18 @@ module Engine
 
             return false unless super
 
-            # bundle = bundle.to_bundle
-            # corporation = bundle.corporation
-            # cert = bundle.shares.first
-            #
-            # # 2nd and last IPO shares may be double; they must be bought in order
-            # if cert.owner == corporation.ipo_owner
-            #   # Filter out investor shares
-            #   ipo_shares = corporation.ipo_shares.select(&:buyable)
-            #
-            #   return cert.double_cert if corporation.second_share_double && ipo_shares.size == 6
-            #
-            #   return cert.double_cert if corporation.last_share_double && ipo_shares.size == 1
-            #
-            #   return false if cert.double_cert
-            # end
+            bundle = bundle.to_bundle
+            return false unless bundle
 
-            true
+            # does this ever happen in 1835?
+            return false unless bundle.shares.length == 1
+
+            corporation = bundle.corporation
+            cert = bundle.shares.first
+            return false unless cert.buyable
+
+            # ensure 20% shares of BA, WT and HE cannot be bought before all 10% shares are gone
+            corporation.shares[0] == cert
           end
 
           def can_gain?(entity, bundle, exchange: false)
