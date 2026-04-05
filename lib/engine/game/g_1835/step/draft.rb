@@ -14,7 +14,6 @@ module Engine
           def setup
             @companies = @game.companies.select { |c| c.owner.nil? && !c.closed? }
             @tiered_companies = @companies.group_by(&:auction_row).values
-            @allow_bayern_presidency_change = false
           end
 
           def available
@@ -118,13 +117,12 @@ module Engine
                 # the presidency. Which is technically correct, the buyer becomes the first president and then players
                 # check whether there is someone else with more shares
                 if share.president && share.corporation.name == "BY"
-                  @allow_bayern_presidency_change = true
                   share.corporation.owner = player
                   @log << "#{player.name} becomes the president of #{share.corporation.name}"
                 end
-                LOGGER.debug("owner: #{@companies.find { |c| c.sym == "BY_D" }.nil?}")
-                # technically, we also transfer a SX share with this code, but for SX presidency change does not matter during draft
-                @game.share_pool.transfer_shares(ShareBundle.new(share), player, allow_president_change: @companies.find { |c| c.sym == "BY_D" }.nil?)
+                @game.bank.spend(share.price, share.corporation)
+
+                @game.share_pool.transfer_shares(ShareBundle.new(share), player, allow_president_change: @companies.find { |c| c.sym == "BY_D" }.nil? || share.corporation.id == "SX")
                 maybe_place_home_token(share.corporation)
 
               end
@@ -134,12 +132,8 @@ module Engine
             end
 
             corporation = @game.find_corporation(company)
-            if corporation
-              LOGGER.debug("found #{corporation.name} #{corporation.type}")
-            end
 
             if corporation && corporation.type == :minor
-              LOGGER.debug("#{corporation.name} bought")
               share = corporation.shares.first
               @game.share_pool.transfer_shares(ShareBundle.new(share), player)
               @game.bank.spend(price, corporation)

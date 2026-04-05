@@ -36,7 +36,7 @@ module Engine
         # bankrupt is allowed, player leaves game
         BANKRUPTCY_ALLOWED = true
 
-        BANK_CASH = 12_000
+        BANK_CASH = 120_000
         PAR_PRICES = {
           'PR' => 154,
           'BY' => 92,
@@ -54,6 +54,8 @@ module Engine
         CAPITALIZATION = :incremental
 
         MUST_SELL_IN_BLOCKS = false
+
+        TOKEN_PLACEMENT_ON_TILE_LAY_ENTITY = :owner
 
         MARKET = [['',
                    '',
@@ -230,6 +232,9 @@ module Engine
           }
 
           # Reserve Preußen shares to be exchanged for Vorpreußen and Privates
+          # Reserving the president share would be correct here, but that would make can_buy and process_buy_shares
+          # really complicated. Instead, the president share can be bought and will be swapped for a 10% share
+          # once PR floats.
           pr.shares.last(8).each { |s| s.buyable = false }
 
           # override share_percent so that MS and OL aren't created as 5-share company
@@ -296,6 +301,7 @@ module Engine
           condition = @can_buy_conditions[corp.id]
           other_corp = @corporations.find{|c| c.id == condition[:corporation] }
           false unless other_corp
+          false unless other_corp.ipo_owner
           other_corp.ipo_owner.percent_of(other_corp) <= 100 - condition[:sold]
         end
 
@@ -317,13 +323,19 @@ module Engine
         end
 
         def cert_limit(_player = nil)
+          return 0 unless _player
           @cert_limit + @corporations.count{|corporation| corporation.type == :major && _player.percent_of(corporation) >= 80}
         end
 
         def tile_lays(_entity)
+          return YELLOW_OR_UPGRADE if _entity.player?
           return YELLOW_OR_UPGRADE if _entity.type == :minor
-          return YELLOW_OR_UPGRADE if @phase.name.to_i >= 3
+          return YELLOW_OR_UPGRADE if @phase.name.to_i >= 2
           TWO_YELLOW
+        end
+
+        def upgrade_ignore_num_cities(from)
+          from.hex.id == 'E19' && from.color == :yellow
         end
 
         def init_round
@@ -366,15 +378,21 @@ module Engine
           @log << "-- Operating Round #{round_num} -- wololooooooo "
           G1835::Round::Operating.new(self, [
             Engine::Step::Bankrupt,
-            Engine::Step::SpecialTrack,
-            Engine::Step::SpecialToken,
+            G1835::Step::SpecialTrack,
+            G1835::Step::SpecialToken,
+            Engine::Step::HomeToken,
             Engine::Step::Track,
             Engine::Step::Token,
             Engine::Step::Route,
-            Engine::Step::Dividend,
+            G1835::Step::Dividend,
             Engine::Step::DiscardTrain,
-            Engine::Step::BuyTrain,
+            G1835::Step::BuyTrain,
           ], round_num: round_num)
+        end
+
+        def abilities(entity, type = nil, time: nil, on_phase: nil, passive_ok: nil, strict_time: nil)
+          res = super
+          res
         end
       end
     end

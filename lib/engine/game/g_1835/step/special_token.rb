@@ -4,7 +4,7 @@ module Engine
   module Game
     module G1835
       module Step
-        class SpecialTrack < Engine::Step::SpecialTrack
+        class SpecialToken < Engine::Step::SpecialToken
 
           # def abilities(entity, **kwargs, &block)
           #   LOGGER.debug("abilties called for #{entity.id} is minor? #{entity.type == :minor} is major? #{entity.type == :major}")
@@ -31,6 +31,19 @@ module Engine
           #
           #   a
           # end
+          def available_tokens(entity)
+            super(current_entity)
+          end
+
+          def place_token(entity, city, token, connected: nil, extra_action: nil, special_ability: nil, check_tokenable: nil, spender: nil, same_hex_allowed: nil)
+            entity = current_entity
+            super
+          end
+          def adjust_token_price_ability!(_entity, token, hex, _city, special_ability: nil)
+            _entity = current_entity
+            LOGGER.debug("adjust_token_price_ability! entity: #{_entity} token: #{token} hex: #{hex.id} _city: #{_city} special_ability: #{special_ability}")
+            super
+          end
         end
       end
     end

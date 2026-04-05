@@ -18,14 +18,15 @@ module Engine
           # end
 
           def process_buy_shares(action)
+            if action.bundle.owner.player?
+              action.bundle.share_price = nationalization_price(action.bundle.price)
+            end
             super
-            LOGGER.debug("process_buy_shares?: #{action}")
-            entity = action.entity
+
             bundle = action.bundle
             corp   = bundle.corporation
 
             all_in_block_sold = @game.corporations_in_same_block(corp).all?{|corporation| corporation.shares.select{|share| share.buyable}.none?{|share| share.owner == corporation}}
-            LOGGER.debug("all_in_block_sold?: #{all_in_block_sold}")
             if all_in_block_sold
               @game.ipo_next_block(corp)
             end
@@ -82,6 +83,7 @@ module Engine
             (price * 1.5).ceil
           end
           def can_nationalize?(player, corporation)
+            false unless player
             player.percent_of(corporation) > 50
           end
 
