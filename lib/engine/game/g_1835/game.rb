@@ -289,7 +289,7 @@ module Engine
           return if block == @corporation_blocks.last
 
           next_block = @corporation_blocks[@corporation_blocks.index(block) + 1]
-          return if next_block.any? { |corp_to_ipo| corp_to_ipo.ipoed == true }
+          return if next_block.any?(&:ipoed)
 
           @log << 'All shares of the current block have been sold.'\
                   " The next block is now available, starting with #{next_block.first.name}"
