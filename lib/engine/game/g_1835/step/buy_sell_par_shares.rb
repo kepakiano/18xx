@@ -1,19 +1,25 @@
 # frozen_string_literal: true
 
+require_relative '../../nationalization'
+
 module Engine
   module Game
     module G1835
       module Step
         class BuySellParShares < Engine::Step::BuySellParShares
+          include Engine::Step::Nationalization
+
           def process_buy_shares(action)
             if action.bundle.owner.player?
-              raise GameError, 'Cannot nationalize this corporation' unless can_buy?(action.entity, action.bundle)
-
-              action.bundle.share_price = nationalization_price(action.bundle.corporation.share_price.price)
+              player = action.entity
+              bundle = action.bundle
+              nationalize(player, bundle)
+              track_action(action, bundle.corporation)
+            else
+              super
             end
-            owner = action.bundle.owner
-            super
-            @game.maybe_ipo_next_block(action.bundle.corporation) unless owner == @game.share_pool
+
+            @game.maybe_ipo_next_block(action.bundle.corporation)
           end
 
           def can_buy?(entity, bundle)
@@ -32,7 +38,7 @@ module Engine
             return bundle.shares.first == bundle.corporation.shares.first unless bundle.corporation == @game.prussian
 
             # Ignore the order for PR: We cannot use the same logic we use for the other corporations, because the very first
-            # share - the president - is reserved. If we used the same logic, no PR share could  ever be bought
+            # share - the president - is reserved. If we used the same logic, no PR share could ever be bought
             true
           end
 

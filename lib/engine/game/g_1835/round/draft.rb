@@ -18,23 +18,16 @@ module Engine
           end
 
           def next_entity!
-            next_entity_index!
-            if finished?
-              @game.draft_finished = all_drafted?
-              return
-            end
+            next_entity_index! if active_step
+            return if finished?
 
             @steps.each(&:unpass!)
             skip_steps
             next_entity! unless active_step
           end
 
-          def all_drafted?
-            @game.companies.all? { |c| c.owner || c.closed? }
-          end
-
           def finished?
-            all_drafted? || @entities.all?(&:passed?)
+            @game.all_drafted? || @entities.all?(&:passed?)
           end
         end
       end
