@@ -16,10 +16,10 @@ module Engine
               nationalize(player, bundle)
               track_action(action, bundle.corporation)
             else
+              owner = action.bundle.owner
               super
+              @game.maybe_ipo_next_block(action.bundle.corporation) unless owner == @game.share_pool
             end
-
-            @game.maybe_ipo_next_block(action.bundle.corporation)
           end
 
           def can_buy?(entity, bundle)

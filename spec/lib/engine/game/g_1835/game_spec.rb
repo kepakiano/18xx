@@ -3,12 +3,230 @@
 require 'spec_helper'
 
 describe Engine::Game::G1835::Game do
+  let(:player_1) { game.players.first }
+  let(:player_2) { game.players[1] }
+  let(:player_3) { game.players[2] }
+  let(:player_4) { game.players[3] }
+  let(:player_5) { game.players[4] }
+  let(:player_6) { game.players[5] }
+  let(:player_7) { game.players[6] }
+
+  def pass(entity)
+    game.process_action(Engine::Action::Pass.new(entity)).maybe_raise!
+  end
+
+  def buy(player, company_id)
+    game.process_action(Engine::Action::Bid.new(player, company: game.company_by_id(company_id),
+                                                        price: game.company_by_id(company_id).value)).maybe_raise!
+  end
+
+  def buy_shares(player, corporation_id, percent = nil, other_player = nil)
+    corp = game.corporation_by_id(corporation_id)
+    unless other_player
+      return game.process_action(Engine::Action::BuyShares.new(player,
+                                                               shares: corp.shares.find(&:buyable))).maybe_raise!
+    end
+
+    game.process_action(Engine::Action::BuyShares.new(player, shares: other_player.shares_of(corp).find do |share|
+      share.percent == percent
+    end)).maybe_raise!
+  end
+
+  describe 'after_starter_pack_player_order_3' do
+    let(:players) { %w[a b c] }
+    let(:game) { Engine::Game::G1835::Game.new(players) }
+
+    it 'should not move the PD if everyone passes' do
+      3.times do |index|
+        pass(game.players[index])
+      end
+      expect(game.players.first).to eq(player_1)
+    end
+
+    it 'should skip a player without money' do
+      buy(player_1, 'NF') # player_1 down to 500
+      pass(player_2)
+      pass(player_3)
+      buy(player_1, '1') # player_1 down to 420
+      pass(player_2)
+      pass(player_3)
+      buy(player_1, 'LD') # player_1 down to 230
+      pass(player_2)
+      pass(player_3)
+      buy(player_1, '2') # player_1 down to 60
+      pass(player_2)
+      pass(player_3)
+      # player_1 is skipped, so the draft round ends
+      expect(game.players.first).to eq(player_2)
+    end
+    it 'should skip two players without money' do
+      buy(player_1, 'NF') # player_1 down to 500
+      buy(player_2, '1') # player_2 down to 520
+      pass(player_3)
+      buy(player_1, 'LD') # player_1 down to 310
+      buy(player_2, '2') # player_2 down to 350
+      pass(player_3)
+      buy(player_1, '3') # player_1 down to 230
+      buy(player_2, '4') # player_2 down to 190
+      pass(player_3)
+      buy(player_1, 'BY_D') # player_1 down to 46
+      buy(player_2, 'BB') # player_1 down to 60
+      buy(player_3, 'HB')
+      # player_1 is skipped
+      # player_2 is skipped
+      buy(player_3, '5')
+      # player_1 is skipped
+      # player_2 is skipped
+      pass(player_3)
+      expect(game.players.first).to eq(player_1)
+    end
+    it 'should set the PD properly after the full sale of the starter packet' do
+      buy(player_1, 'NF')
+      buy(player_2, '1')
+      buy(player_3, 'LD')
+      buy(player_1, '2')
+      buy(player_2, '3')
+      buy(player_3, '4')
+      buy(player_1, 'BY_D')
+      buy(player_2, 'HB')
+      buy(player_3, '5')
+      buy(player_1, 'BB')
+      buy(player_2, '6')
+      buy(player_3, 'PB')
+      # player_1 is skipped
+      buy(player_2, 'OBB')
+
+      expect(game.players.first).to eq(player_3)
+    end
+  end
+
+  describe 'after_starter_pack_player_order_4' do
+    let(:players) { %w[a b c d] }
+    let(:game) { Engine::Game::G1835::Game.new(players) }
+
+    it 'should not move the PD if everyone passes' do
+      4.times do |index|
+        pass(game.players[index])
+      end
+      expect(game.players.first).to eq(player_1)
+    end
+
+    it 'should set the PD properly after the full sale of the starter packet' do
+      buy(player_1, 'NF')
+      buy(player_2, 'LD')
+      pass(player_3)
+      buy(player_4, '1')
+      buy(player_1, '2')
+      buy(player_2, 'BY_D')
+      buy(player_3, '4')
+      buy(player_4, '3')
+      pass(player_1)
+      # player_2 is skipped. Still has 101, but no current option
+      buy(player_3, 'BB')
+      buy(player_4, 'PB')
+      buy(player_1, 'OBB')
+      buy(player_2, '5')
+      buy(player_3, 'HB')
+      pass(player_4)
+      buy(player_1, '6')
+
+      expect(game.players.first).to eq(player_2)
+    end
+  end
+
+  describe 'after_starter_pack_player_order_5' do
+    let(:players) { %w[a b c d e] }
+    let(:game) { Engine::Game::G1835::Game.new(players) }
+
+    it 'should not move the PD if everyone passes' do
+      5.times do |index|
+        pass(game.players[index])
+      end
+      expect(game.players.first).to eq(player_1)
+    end
+
+    it 'should set the PD properly after the full sale of the starter packet' do
+      buy(player_1, 'NF')
+      buy(player_2, '1')
+      buy(player_3, 'LD')
+      buy(player_4, '2')
+      buy(player_5, '3')
+      buy(player_1, '4')
+      buy(player_2, 'BY_D')
+      buy(player_3, 'BB')
+      buy(player_4, 'HB')
+      buy(player_5, '5')
+      buy(player_1, '6')
+      buy(player_2, 'OBB')
+      # player 3 is skipped
+      # player 4 is skipped
+      buy(player_5, 'PB')
+      expect(game.players.first).to eq(player_1)
+    end
+  end
+
+  describe 'after_starter_pack_player_order_6' do
+    let(:players) { %w[a b c d e f] }
+    let(:game) { Engine::Game::G1835::Game.new(players) }
+
+    it 'should not move the PD if everyone passes' do
+      6.times do |index|
+        pass(game.players[index])
+      end
+      expect(game.players.first).to eq(player_1)
+    end
+
+    it 'should set the PD properly after the full sale of the starter packet' do
+      buy(player_1, 'NF')
+      buy(player_2, '1')
+      buy(player_3, 'LD')
+      buy(player_4, '2')
+      buy(player_5, '3')
+      buy(player_6, '4')
+      buy(player_1, 'BY_D')
+      buy(player_2, 'BB')
+      buy(player_3, 'PB')
+      buy(player_4, 'HB')
+      buy(player_5, 'OBB')
+      buy(player_6, '5')
+      # player 1 is skipped
+      buy(player_2, '6')
+      expect(game.players.first).to eq(player_3)
+    end
+  end
+
+  describe 'after_starter_pack_player_order_7' do
+    let(:players) { %w[a b c d e f g] }
+    let(:game) { Engine::Game::G1835::Game.new(players) }
+
+    it 'should not move the PD if everyone passes' do
+      7.times do |index|
+        pass(game.players[index])
+      end
+      expect(game.players.first).to eq(player_1)
+    end
+
+    it 'should set the PD properly after the full sale of the starter packet' do
+      buy(player_1, 'NF')
+      buy(player_2, '1')
+      buy(player_3, 'LD')
+      buy(player_4, '2')
+      buy(player_5, '3')
+      buy(player_6, '4')
+      buy(player_7, 'BY_D')
+      buy(player_1, 'BB')
+      buy(player_2, 'HB')
+      buy(player_3, '5')
+      buy(player_4, '6')
+      buy(player_5, 'OBB')
+      buy(player_6, 'PB')
+      expect(game.players.first).to eq(player_7)
+    end
+  end
+
   describe 'stock_round' do
     let(:players) { %w[a b c] }
     let(:game) { Engine::Game::G1835::Game.new(players) }
-    let(:player_1) { game.players.first }
-    let(:player_2) { game.players[1] }
-    let(:player_3) { game.players[2] }
     let(:by) { game.corporation_by_id('BY') }
     let(:sx) { game.corporation_by_id('SX') }
     let(:ba) { game.corporation_by_id('BA') }
@@ -17,27 +235,6 @@ describe Engine::Game::G1835::Game do
     let(:pr) { game.corporation_by_id('PR') }
     let(:ms) { game.corporation_by_id('MS') }
     let(:ol) { game.corporation_by_id('OL') }
-
-    def buy(player, company_id)
-      game.process_action(Engine::Action::Bid.new(player, company: game.company_by_id(company_id),
-                                                          price: game.company_by_id(company_id).value))
-    end
-
-    def buy_shares(player, corporation_id, percent = nil, other_player = nil)
-      corp = game.corporation_by_id(corporation_id)
-      unless other_player
-        return game.process_action(Engine::Action::BuyShares.new(player,
-                                                                 shares: corp.shares.find(&:buyable)))
-      end
-
-      game.process_action(Engine::Action::BuyShares.new(player, shares: other_player.shares_of(corp).find do |share|
-                                                                          share.percent == percent
-                                                                        end))
-    end
-
-    def pass(entity)
-      game.process_action(Engine::Action::Pass.new(entity))
-    end
 
     def may_purchase?(company_id)
       game.active_step.may_purchase?(game.company_by_id(company_id))
@@ -112,11 +309,6 @@ describe Engine::Game::G1835::Game do
     end
 
     def sell_start_packet
-      # we expect that everyone has enough money to make arbitrary purchases in order to make the testing easy
-      expect(player_1.cash).to be >= 3000
-      expect(player_2.cash).to be >= 3000
-      expect(player_3.cash).to be >= 3000
-
       buy(player_1, 'NF')
       buy(player_2, '2')
       buy(player_3, 'LD')
@@ -143,6 +335,7 @@ describe Engine::Game::G1835::Game do
     end
 
     it 'is possible to nationalize' do
+      # ignore cash limits for now....
       player_1.set_cash(3000, game.bank)
       player_2.set_cash(3000, game.bank)
       player_3.set_cash(3000, game.bank)
@@ -154,9 +347,12 @@ describe Engine::Game::G1835::Game do
       # player_1 now has 60% and player_2 has 10% of BY, so player_1 can nationalize
       pass(player_2)
       pass(player_3)
+
+      nationalization_price = 138 # BY stock value is 92
+      # give player 1 exactly the money they need for the nationlization
+      player_1.set_cash(nationalization_price, game.bank)
       player_1_cash_before = player_1.cash
       player_2_cash_before = player_2.cash
-      nationalization_price = 138 # BY stock value is 92
       buy_shares(player_1, 'BY', 10, player_2)
       expect(player_1.percent_of(by)).to be 70
       expect(player_2.percent_of(by)).to be 0

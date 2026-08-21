@@ -196,8 +196,6 @@ module Engine
             corp.shares.reject(&:president).each { |share| share.double_cert = (share.percent == 20) }
           end
 
-          @draft_finished = false
-
           @draft_round_num = 1
           @preussen_may_float = false
 
@@ -230,8 +228,8 @@ module Engine
         end
 
         def new_draft_round
-          G1835::Round::Draft.new(self,
-                                  [G1835::Step::Draft],)
+          @log << "-- #{round_description('Draft')} --"
+          init_round
         end
 
         def next_round!
@@ -289,7 +287,6 @@ module Engine
           return if block == @corporation_blocks.last
 
           next_block = @corporation_blocks[@corporation_blocks.index(block) + 1]
-          return if next_block.any?(&:ipoed)
 
           @log << 'All shares of the current block have been sold.'\
                   " The next block is now available, starting with #{next_block.first.name}"

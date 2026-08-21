@@ -11,14 +11,8 @@ module Engine
             @game.players
           end
 
-          def after_process(_action)
-            return if active_step
-
-            next_entity!
-          end
-
           def next_entity!
-            next_entity_index! if active_step
+            next_entity_index!
             return if finished?
 
             @steps.each(&:unpass!)
