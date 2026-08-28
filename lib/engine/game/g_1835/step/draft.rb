@@ -125,8 +125,8 @@ module Engine
           end
 
           def skip!
-            log_skip(current_entity)
-            current_entity.pass!
+            super
+            current_entity&.pass!
           end
 
           def may_choose?(_company)

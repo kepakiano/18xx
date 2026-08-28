@@ -3,13 +3,13 @@
 require 'spec_helper'
 
 describe Engine::Game::G1835::Game do
-  let(:player_1) { game.players.first }
-  let(:player_2) { game.players[1] }
-  let(:player_3) { game.players[2] }
-  let(:player_4) { game.players[3] }
-  let(:player_5) { game.players[4] }
-  let(:player_6) { game.players[5] }
-  let(:player_7) { game.players[6] }
+  let(:player_1) { game.players.find { |player| player.id == 'a' } }
+  let(:player_2) { game.players.find { |player| player.id == 'b' } }
+  let(:player_3) { game.players.find { |player| player.id == 'c' } }
+  let(:player_4) { game.players.find { |player| player.id == 'd' } }
+  let(:player_5) { game.players.find { |player| player.id == 'e' } }
+  let(:player_6) { game.players.find { |player| player.id == 'f' } }
+  let(:player_7) { game.players.find { |player| player.id == 'g' } }
 
   def pass(entity)
     game.process_action(Engine::Action::Pass.new(entity)).maybe_raise!

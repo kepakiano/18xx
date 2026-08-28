@@ -9,8 +9,8 @@ module Engine
         corporation = bundle.corporation
 
         raise GameError, 'Not enough cash for nationalization' unless player.cash >= price
-        raise GameError, 'Cannot nationalize this corporation' unless can_buy?(player, bundle)
         raise GameError, 'Cannot nationalize this corporation' unless can_nationalize?(player, corporation)
+        raise GameError, "Can't buy a share of #{corporation&.name}" unless can_buy?(player, bundle)
 
         @log << "-- Nationalization: #{player.name} buys a #{bundle.percent}% share"\
                 " of #{corporation.name} from #{owner.name} for #{@game.format_currency(price)} --"
