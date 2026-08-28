@@ -12,7 +12,7 @@ module Engine
   module Game
     module G1835
       class Game < Game::Base
-        attr_accessor :draft_finished, :pr_can_form, :conversion_choice_during_or
+        attr_accessor :pr_can_form, :conversion_choice_during_or
         attr_reader :preussen_may_float
 
         include_meta(G1835::Meta)
@@ -196,8 +196,6 @@ module Engine
             corp.shares.reject(&:president).each { |share| share.double_cert = (share.percent == 20) }
           end
 
-          @draft_finished = false
-
           @draft_round_num = 1
           @preussen_may_float = false
 
@@ -230,12 +228,12 @@ module Engine
         end
 
         def new_draft_round
-          G1835::Round::Draft.new(self,
-                                  [G1835::Step::Draft],)
+          @log << "-- #{round_description('Draft')} --"
+          init_round
         end
 
         def next_round!
-          return super if @draft_finished
+          return super if all_drafted?
 
           clear_programmed_actions
           @round =
@@ -272,6 +270,10 @@ module Engine
           ])
         end
 
+        def all_drafted?
+          companies.all? { |c| c.owner || c.closed? }
+        end
+
         def bundles_for_corporation(share_holder, corporation, shares: nil)
           return super if share_holder.player? && corporation.type == :major
 
@@ -285,6 +287,7 @@ module Engine
           return if block == @corporation_blocks.last
 
           next_block = @corporation_blocks[@corporation_blocks.index(block) + 1]
+
           @log << 'All shares of the current block have been sold.'\
                   " The next block is now available, starting with #{next_block.first.name}"
           next_block.each { |corp_to_ipo| corp_to_ipo.ipoed = true }
