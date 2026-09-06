@@ -179,13 +179,13 @@ module Engine
         end
 
         def init_round
-          new_draft_round
+          G1835::Round::Draft.new(self,
+                                  [G1835::Step::Draft], round_num: @draft_round_num || 1)
         end
 
         def new_draft_round
-          @log << "-- #{round_description('Draft', 0)} --"
-          G1835::Round::Draft.new(self,
-                                  [G1835::Step::Draft], round_num: @draft_round_num)
+          @log << "-- #{round_description('Draft')} --"
+          init_round
         end
 
         def next_round!
