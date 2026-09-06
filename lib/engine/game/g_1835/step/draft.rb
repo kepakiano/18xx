@@ -81,6 +81,9 @@ module Engine
             player = action.entity
             price = action.price
 
+            raise GameError, "#{company.name} is not purchasable" unless may_purchase?(company)
+            raise GameError, "#{playern.name} does not have enough money to buy #{company.name}" if price > player.cash
+
             assign_company(company, player)
             player.spend(price, @game.bank)
             remove_company(company)
