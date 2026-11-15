@@ -252,10 +252,26 @@ module Engine
           companies.all? { |c| c.owner || c.closed? }
         end
 
-        def bundles_for_corporation(share_holder, corporation, shares: nil)
-          return super if share_holder.player? && major?(corporation)
+        def all_bundles_for_corporation(share_holder, corporation, shares: nil)
+          return [] unless corporation.ipoed
 
-          []
+          shares ||= share_holder.shares_of(corporation)
+          return [] if shares.empty?
+
+          regular_shares, other_shares = shares
+                                           .sort_by { |h| [h.president ? 1 : 0] }
+                                           .partition { |share| share.percent == corporation.share_percent }
+
+          bundles = (1..regular_shares.size).map { |i| Engine::ShareBundle.new(regular_shares.take(i)) }
+
+          bundles << Engine::ShareBundle.new(other_shares.first, other_shares.first.percent) unless other_shares.empty?
+
+          # reject bundles containing pres share if bundle with same percentage w/o pres share exists
+          bundles.reject do |bundle|
+            bundle.shares.any?(&:president) && bundles.any? do |b|
+              bundle.percent == b.percent && bundle.shares.size + 1 == b.shares.size
+            end
+          end
         end
 
         def shares_for_presidency_swap(shares, num_shares)
