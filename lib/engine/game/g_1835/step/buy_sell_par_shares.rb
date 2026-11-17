@@ -43,6 +43,16 @@ module Engine
             true
           end
 
+          def can_dump?(entity, bundle)
+            return false unless super
+            return true unless bundle.presidents_share
+
+            # bundles containing the pres share can only be sold if another player would become the president and thus
+            # receive the pres share from the market
+            sh = bundle.corporation.player_share_holders(corporate: true)
+            (sh.reject { |k, _| k == entity }.values.max || 0) > (entity.percent_of(bundle.corporation) - bundle.percent)
+          end
+
           def allow_president_change?(corporation)
             # PR president can only change hands after it has been floated
             corporation.id != 'PR' || corporation.floated?

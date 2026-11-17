@@ -17,7 +17,8 @@ module Engine
           shares.sort_by(&:percent)
         end
 
-        def change_president(presidents_share, swap_to, president, previous_president)
+        def change_president(presidents_share, _, president, previous_president)
+          swap_to = presidents_share.owner.player? ? previous_president : self
           president_percent = presidents_share.percent
           presidents_percentages = president.shares_of(presidents_share.corporation).map(&:percent)
           choice_available = presidents_percentages.count(president_percent / 2) >= 2 &&
@@ -30,7 +31,33 @@ module Engine
             return
           end
 
-          super
+          super(presidents_share, swap_to, president, _previous_president = nil)
+        end
+
+        def num_presentation(bundle)
+          return "a #{bundle.percent}% share" if bundle.shares.size == 1
+          return "#{bundle.shares.size} #{bundle.shares.first.percent}% shares" if bundle.shares.map(&:percent).uniq.size == 1
+
+          low, high = bundle.shares.map(&:percent).tally.sort_by { |p, _| p }
+
+          "#{to_words(low[1])} #{low[0]}% and #{to_words(high[1])} #{high[0]}% share(s)"
+        end
+
+        def to_words(i)
+          case i
+          when 1
+            'one'
+          when 2
+            'two'
+          when 3
+            'three'
+          when 4
+            'four'
+          when 5
+            'five'
+          else
+            '' + i
+          end
         end
       end
     end
